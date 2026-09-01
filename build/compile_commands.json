@@ -1,0 +1,56 @@
+[
+{
+  "directory": "/home/exil_s/piperack/build",
+  "command": "/usr/bin/clang++ -DHAVE_PULSE=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/exil_s/piperack/build -I/home/exil_s/piperack -I/home/exil_s/piperack/build/piperack_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/pipewire-0.3 -isystem /usr/include/spa-0.2 -g -std=gnu++17 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-direct-access-external-data -D_REENTRANT -fno-strict-aliasing -fno-strict-overflow -o CMakeFiles/piperack.dir/piperack_autogen/mocs_compilation.cpp.o -c /home/exil_s/piperack/build/piperack_autogen/mocs_compilation.cpp",
+  "file": "/home/exil_s/piperack/build/piperack_autogen/mocs_compilation.cpp",
+  "output": "/home/exil_s/piperack/build/CMakeFiles/piperack.dir/piperack_autogen/mocs_compilation.cpp.o"
+},
+{
+  "directory": "/home/exil_s/piperack/build",
+  "command": "/usr/bin/clang++ -DHAVE_PULSE=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/exil_s/piperack/build -I/home/exil_s/piperack -I/home/exil_s/piperack/build/piperack_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/pipewire-0.3 -isystem /usr/include/spa-0.2 -g -std=gnu++17 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-direct-access-external-data -D_REENTRANT -fno-strict-aliasing -fno-strict-overflow -o CMakeFiles/piperack.dir/src/main.cpp.o -c /home/exil_s/piperack/src/main.cpp",
+  "file": "/home/exil_s/piperack/src/main.cpp",
+  "output": "/home/exil_s/piperack/build/CMakeFiles/piperack.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/exil_s/piperack/build",
+  "command": "/usr/bin/clang++ -DHAVE_PULSE=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/exil_s/piperack/build -I/home/exil_s/piperack -I/home/exil_s/piperack/build/piperack_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/pipewire-0.3 -isystem /usr/include/spa-0.2 -g -std=gnu++17 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-direct-access-external-data -D_REENTRANT -fno-strict-aliasing -fno-strict-overflow -o CMakeFiles/piperack.dir/src/AudioBackend.cpp.o -c /home/exil_s/piperack/src/AudioBackend.cpp",
+  "file": "/home/exil_s/piperack/src/AudioBackend.cpp",
+  "output": "/home/exil_s/piperack/build/CMakeFiles/piperack.dir/src/AudioBackend.cpp.o"
+},
+{
+  "directory": "/home/exil_s/piperack/build",
+  "command": "/usr/bin/clang++ -DHAVE_PULSE=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/exil_s/piperack/build -I/home/exil_s/piperack -I/home/exil_s/piperack/build/piperack_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/pipewire-0.3 -isystem /usr/include/spa-0.2 -g -std=gnu++17 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-direct-access-external-data -D_REENTRANT -fno-strict-aliasing -fno-strict-overflow -o CMakeFiles/piperack.dir/src/MainWindow.cpp.o -c /home/exil_s/piperack/src/MainWindow.cpp",
+  "file": "/home/exil_s/piperack/src/MainWindow.cpp",
+  "output": "/home/exil_s/piperack/build/CMakeFiles/piperack.dir/src/MainWindow.cpp.o"
+},
+{
+  "directory": "/home/exil_s/piperack/build",
+  "command": "/usr/bin/clang++ -DHAVE_PULSE=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/exil_s/piperack/build -I/home/exil_s/piperack -I/home/exil_s/piperack/build/piperack_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/pipewire-0.3 -isystem /usr/include/spa-0.2 -g -std=gnu++17 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-direct-access-external-data -D_REENTRANT -fno-strict-aliasing -fno-strict-overflow -o CMakeFiles/piperack.dir/src/RackUnit.cpp.o -c /home/exil_s/piperack/src/RackUnit.cpp",
+  "file": "/home/exil_s/piperack/src/RackUnit.cpp",
+  "output": "/home/exil_s/piperack/build/CMakeFiles/piperack.dir/src/RackUnit.cpp.o"
+},
+{
+  "directory": "/home/exil_s/piperack/build",
+  "command": "/usr/bin/clang++ -DHAVE_PULSE=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/exil_s/piperack/build -I/home/exil_s/piperack -I/home/exil_s/piperack/build/piperack_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/pipewire-0.3 -isystem /usr/include/spa-0.2 -g -std=gnu++17 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-direct-access-external-data -D_REENTRANT -fno-strict-aliasing -fno-strict-overflow -o CMakeFiles/piperack.dir/src/WaveformView.cpp.o -c /home/exil_s/piperack/src/WaveformView.cpp",
+  "file": "/home/exil_s/piperack/src/WaveformView.cpp",
+  "output": "/home/exil_s/piperack/build/CMakeFiles/piperack.dir/src/WaveformView.cpp.o"
+},
+{
+  "directory": "/home/exil_s/piperack/build",
+  "command": "/usr/bin/clang++ -DHAVE_PULSE=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/exil_s/piperack/build -I/home/exil_s/piperack -I/home/exil_s/piperack/build/piperack_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/pipewire-0.3 -isystem /usr/include/spa-0.2 -g -std=gnu++17 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-direct-access-external-data -D_REENTRANT -fno-strict-aliasing -fno-strict-overflow -o CMakeFiles/piperack.dir/src/RackWidgets.cpp.o -c /home/exil_s/piperack/src/RackWidgets.cpp",
+  "file": "/home/exil_s/piperack/src/RackWidgets.cpp",
+  "output": "/home/exil_s/piperack/build/CMakeFiles/piperack.dir/src/RackWidgets.cpp.o"
+},
+{
+  "directory": "/home/exil_s/piperack/build",
+  "command": "/usr/bin/clang++ -DHAVE_PULSE=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/exil_s/piperack/build -I/home/exil_s/piperack -I/home/exil_s/piperack/build/piperack_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/pipewire-0.3 -isystem /usr/include/spa-0.2 -g -std=gnu++17 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-direct-access-external-data -D_REENTRANT -fno-strict-aliasing -fno-strict-overflow -o CMakeFiles/piperack.dir/src/PipeWireBackend.cpp.o -c /home/exil_s/piperack/src/PipeWireBackend.cpp",
+  "file": "/home/exil_s/piperack/src/PipeWireBackend.cpp",
+  "output": "/home/exil_s/piperack/build/CMakeFiles/piperack.dir/src/PipeWireBackend.cpp.o"
+},
+{
+  "directory": "/home/exil_s/piperack/build",
+  "command": "/usr/bin/clang++ -DHAVE_PULSE=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/home/exil_s/piperack/build -I/home/exil_s/piperack -I/home/exil_s/piperack/build/piperack_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -isystem /usr/include/pipewire-0.3 -isystem /usr/include/spa-0.2 -g -std=gnu++17 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-direct-access-external-data -D_REENTRANT -fno-strict-aliasing -fno-strict-overflow -o CMakeFiles/piperack.dir/src/PulseBackend.cpp.o -c /home/exil_s/piperack/src/PulseBackend.cpp",
+  "file": "/home/exil_s/piperack/src/PulseBackend.cpp",
+  "output": "/home/exil_s/piperack/build/CMakeFiles/piperack.dir/src/PulseBackend.cpp.o"
+}
+]

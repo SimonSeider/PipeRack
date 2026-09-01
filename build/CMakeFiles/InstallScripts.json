@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/exil_s/piperack/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
