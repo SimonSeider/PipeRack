@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         delete candidate;
         return false;
     };
-
+    //TODO: This is a current bug, having both backends makes the app try to start both at the same time
     if (want == QLatin1String("pulse"))
     {
 #ifdef HAVE_PULSE
