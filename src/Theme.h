@@ -6,28 +6,25 @@
 namespace Theme
 {
 
-    inline QColor windowBg() { return QColor(0x14, 0x16, 0x19); }
-    inline QColor railDark() { return QColor(0x1b, 0x1d, 0x21); }
-    inline QColor railLight() { return QColor(0x2a, 0x2d, 0x33); }
-    inline QColor holeDark() { return QColor(0x0a, 0x0b, 0x0d); }
+    inline QColor windowBg() { return QColor(0x0f, 0x11, 0x15); }
+    inline QColor surface() { return QColor(0x17, 0x1a, 0x20); }
+    inline QColor surfaceHi() { return QColor(0x1e, 0x22, 0x2a); }
+    inline QColor field() { return QColor(0x12, 0x15, 0x1a); }
+    inline QColor border() { return QColor(0x27, 0x2c, 0x35); }
+    inline QColor borderHi() { return QColor(0x3a, 0x41, 0x4d); }
 
-    inline QColor plateTop() { return QColor(0x41, 0x46, 0x4e); }
-    inline QColor plateBottom() { return QColor(0x2c, 0x30, 0x36); }
-    inline QColor plateEdge() { return QColor(0x55, 0x5b, 0x64); }
-    inline QColor plateShadow() { return QColor(0x0e, 0x0f, 0x12); }
+    inline QColor textBright() { return QColor(0xe8, 0xea, 0xef); }
+    inline QColor textDim() { return QColor(0x98, 0xa0, 0xac); }
+    inline QColor textFaint() { return QColor(0x63, 0x6b, 0x77); }
 
-    inline QColor textBright() { return QColor(0xe6, 0xe9, 0xee); }
-    inline QColor textDim() { return QColor(0x96, 0x9d, 0xa8); }
-    inline QColor textFaint() { return QColor(0x6b, 0x72, 0x7d); }
+    inline QColor signal() { return QColor(0x3d, 0xcf, 0x8e); }
+    inline QColor signalDim() { return QColor(0x1f, 0x6b, 0x4c); }
+    inline QColor warn() { return QColor(0xef, 0xb3, 0x3d); }
+    inline QColor clip() { return QColor(0xef, 0x5a, 0x52); }
+    inline QColor accent() { return QColor(0x5b, 0x9d, 0xff); }
 
-    inline QColor signal() { return QColor(0x46, 0xe0, 0x92); }
-    inline QColor signalDim() { return QColor(0x24, 0x7a, 0x53); }
-    inline QColor warn() { return QColor(0xf5, 0xb2, 0x3d); }
-    inline QColor clip() { return QColor(0xf3, 0x5b, 0x51); }
-    inline QColor accent() { return QColor(0x62, 0xb8, 0xf0); }
-
-    inline QColor screenBg() { return QColor(0x07, 0x0b, 0x09); }
-    inline QColor screenGrid() { return QColor(0x1a, 0x2a, 0x22); }
+    inline QColor screenBg() { return QColor(0x0d, 0x10, 0x14); }
+    inline QColor screenGrid() { return QColor(0x1d, 0x22, 0x2a); }
 
     inline QFont labelFont(int px, bool bold = false)
     {
@@ -45,12 +42,13 @@ namespace Theme
         return f;
     }
 
-    inline QFont engravedFont(int px)
+    // Small all-caps label, used sparingly for captions.
+    inline QFont capsFont(int px)
     {
         QFont f = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
         f.setPixelSize(px);
-        f.setBold(true);
-        f.setLetterSpacing(QFont::AbsoluteSpacing, 1.1);
+        f.setWeight(QFont::DemiBold);
+        f.setLetterSpacing(QFont::AbsoluteSpacing, 0.8);
         f.setCapitalization(QFont::AllUppercase);
         return f;
     }

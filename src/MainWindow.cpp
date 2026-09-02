@@ -8,7 +8,6 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QLinearGradient>
 #include <QMessageBox>
 #include <QPainter>
 #include <QScrollArea>
@@ -34,30 +33,28 @@ MainWindow::MainWindow(AudioBackend *backend, QWidget *parent)
     outer->setSpacing(0);
 
     auto *brow = new QWidget(central);
-    brow->setFixedHeight(62);
+    brow->setFixedHeight(56);
     auto *browLay = new QHBoxLayout(brow);
     browLay->setContentsMargins(22, 0, 22, 0);
-    browLay->setSpacing(12);
+    browLay->setSpacing(10);
 
-    auto *title = new QLabel(QStringLiteral("PIPERACK"), brow);
-    title->setFont(Theme::engravedFont(19));
-    title->setStyleSheet(QStringLiteral("color: #e6e9ee;"));
+    auto *title = new QLabel(QStringLiteral("PipeRack"), brow);
+    title->setFont(Theme::labelFont(17, true));
+    title->setStyleSheet(QStringLiteral("color: #e8eaef;"));
 
-    m_add = new RackButton(QStringLiteral("        Add Cable"), brow); // fuck this shit honestly
-    m_add->setFixedSize(130, 34);
-    m_add->setLedColour(Theme::accent());
-    m_add->setStyleSheet("text-align: center;");
-
-    connect(m_add, &RackButton::clicked, this, &MainWindow::onAddCable);
+    m_badge = new QLabel(m_backend->displayName(), brow);
+    m_badge->setFont(Theme::labelFont(11));
+    m_badge->setStyleSheet(QStringLiteral(
+        "color: #98a0ac; border: 1px solid #272c35; border-radius: 9px; padding: 3px 9px;"));
 
     browLay->addWidget(title);
+    browLay->addWidget(m_badge);
     browLay->addStretch(1);
-    browLay->addWidget(m_add);
     outer->addWidget(brow);
 
     auto *seam = new QFrame(central);
     seam->setFixedHeight(1);
-    seam->setStyleSheet(QStringLiteral("background: #0a0b0d;"));
+    seam->setStyleSheet(QStringLiteral("background: #272c35;"));
     outer->addWidget(seam);
 
     m_scroll = new QScrollArea(central);
@@ -67,31 +64,46 @@ MainWindow::MainWindow(AudioBackend *backend, QWidget *parent)
     m_scroll->viewport()->setAutoFillBackground(false);
     m_scroll->setStyleSheet(QStringLiteral(
         "QScrollArea { background: transparent; }"
-        "QScrollBar:vertical { background: #101215; width: 11px; margin: 0; }"
-        "QScrollBar::handle:vertical { background: #3a3f47; border-radius: 5px; min-height: 40px; }"
-        "QScrollBar::handle:vertical:hover { background: #4c525b; }"
+        "QScrollBar:vertical { background: transparent; width: 10px; margin: 0; }"
+        "QScrollBar::handle:vertical { background: #272c35; border-radius: 5px; min-height: 40px; }"
+        "QScrollBar::handle:vertical:hover { background: #3a414d; }"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }"
         "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }"));
 
     m_rackHost = new QWidget;
     m_rackHost->setAutoFillBackground(false);
     m_rackLayout = new QVBoxLayout(m_rackHost);
-    m_rackLayout->setContentsMargins(16, 14, 16, 16);
-    m_rackLayout->setSpacing(8);
+    m_rackLayout->setContentsMargins(18, 16, 18, 18);
+    m_rackLayout->setSpacing(10);
 
     m_empty = new QLabel(m_rackHost);
     m_empty->setAlignment(Qt::AlignCenter);
     m_empty->setWordWrap(true);
     m_empty->setFont(Theme::labelFont(13));
-    m_empty->setStyleSheet(QStringLiteral("color: #6b727d; padding: 60px 40px;"));
+    m_empty->setStyleSheet(QStringLiteral("color: #636b77; padding: 54px 40px;"));
     m_empty->setText(QStringLiteral(
         "<div style='line-height:150%'>"
-        "<span style='font-size:15px; color:#969da8;'>The rack is empty.</span><br><br>"
+        "<span style='font-size:15px; color:#98a0ac;'>The rack is empty.</span><br><br>"
         "Add a cable to create a matched pair of virtual devices.<br>"
-        "Send audio to the cable's <b style='color:#62b8f0'>output</b> and any app can record it "
-        "from the cable's <b style='color:#f5b23d'>input</b>.</div>"));
+        "Send audio to the cable's <b style='color:#5b9dff'>output</b> and any app can record it "
+        "from the cable's <b style='color:#3dcf8e'>input</b>.</div>"));
+
+    // The add button sits below every rack, scrolling with them.
+    m_addRow = new QWidget(m_rackHost);
+    auto *addLay = new QHBoxLayout(m_addRow);
+    addLay->setContentsMargins(0, 2, 0, 0);
+    addLay->setSpacing(0);
+
+    m_add = new RackButton(QStringLiteral("+  Add Cable"), m_addRow);
+    m_add->setGhost(true);
+    m_add->setActiveColour(Theme::accent());
+    m_add->setFixedHeight(40);
+    m_add->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    connect(m_add, &RackButton::clicked, this, &MainWindow::onAddCable);
+    addLay->addWidget(m_add);
 
     m_rackLayout->addWidget(m_empty);
+    m_rackLayout->addWidget(m_addRow);
     m_rackLayout->addStretch(1);
 
     m_scroll->setWidget(m_rackHost);
@@ -189,7 +201,7 @@ RackUnit *MainWindow::addUnit(const CableConfig &cfg, bool announceFailure)
         return nullptr;
     }
 
-    m_rackLayout->insertWidget(m_rackLayout->count() - 1, unit);
+    m_rackLayout->insertWidget(m_rackLayout->indexOf(m_addRow), unit);
     m_units.append(unit);
     renumber();
     updateEmptyState();
@@ -344,7 +356,7 @@ void MainWindow::onBackendLost(const QString &reason)
 
     m_badge->setText(QStringLiteral("%1 · disconnected").arg(m_backend->displayName()));
     m_badge->setStyleSheet(QStringLiteral(
-        "color: #f35b51; border: 1px solid #6b2b27; border-radius: 9px; padding: 3px 9px;"));
+        "color: #ef5a52; border: 1px solid #5a2a27; border-radius: 9px; padding: 3px 9px;"));
     m_add->setEnabled(false);
 
     QMessageBox::critical(this, QStringLiteral("Audio server connection lost"),
@@ -435,10 +447,5 @@ void MainWindow::closeEvent(QCloseEvent *e)
 void MainWindow::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
-
-    QLinearGradient g(0, 0, 0, height());
-    g.setColorAt(0.0, QColor(0x1e, 0x21, 0x26));
-    g.setColorAt(0.06, QColor(0x17, 0x19, 0x1d));
-    g.setColorAt(1.0, Theme::windowBg());
-    p.fillRect(rect(), g);
+    p.fillRect(rect(), Theme::windowBg());
 }

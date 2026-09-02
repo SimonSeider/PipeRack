@@ -9,7 +9,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets)
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
+pkg_check_modules(PIPEWIRE IMPORTED_TARGET libpipewire-0.3)
 pkg_check_modules(PULSE IMPORTED_TARGET libpulse)
 
 set(SOURCES
@@ -31,16 +31,23 @@ endif()
 
 add_executable(piperack ${SOURCES})
 
-target_link_libraries(piperack PRIVATE Qt6::Widgets PkgConfig::PIPEWIRE)
+target_link_libraries(piperack PRIVATE Qt6::Widgets)
+
+if(PIPEWIRE_FOUND)
+    target_link_libraries(piperack PRIVATE PkgConfig::PIPEWIRE)
+    target_compile_definitions(piperack PRIVATE HAVE_PIPEWIRE=1)
+endif()
 
 if(PULSE_FOUND)
     target_link_libraries(piperack PRIVATE PkgConfig::PULSE)
     target_compile_definitions(piperack PRIVATE HAVE_PULSE=1)
-elseif(PIPEWIRE_FOUND)
-    target_compile_definitions(piperack PRIVATE HAVE_PIPEWIRE=1)
-else()
+endif()
+
+if(NOT PIPEWIRE_FOUND AND NOT PULSE_FOUND)
     message(FATAL_ERROR "Neither PulseAudio nor PipeWire was found. Please install one of them.")
 endif()
+
+message(STATUS "piperack backends: PipeWire=${PIPEWIRE_FOUND} PulseAudio=${PULSE_FOUND}")
 
 target_compile_options(piperack PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers)
 

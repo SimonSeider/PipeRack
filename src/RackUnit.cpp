@@ -3,131 +3,88 @@
 #include "Theme.h"
 #include "WaveformView.h"
 
-#include <QApplication>
-#include <QClipboard>
+#include <QAction>
 #include <QEnterEvent>
 #include <QHBoxLayout>
-#include <QAction>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QPainterPath>
-#include <QTimer>
 #include <QVBoxLayout>
 #include <QVariant>
 
 #include <algorithm>
 #include <cmath>
 
-static constexpr int kRailWidth = 30;
-static constexpr int kUnitHeight = 190;
+static constexpr int kUnitHeight = 156;
+static constexpr int kSidePad = 16;
 
-PortStrip::PortStrip(Role role, QWidget *parent) : QWidget(parent), m_role(role)
+UsageStrip::UsageStrip(QWidget *parent) : QWidget(parent)
 {
-    setCursor(Qt::PointingHandCursor);
-    setAttribute(Qt::WA_Hover, true);
-    setFixedHeight(26);
+    setFixedHeight(28);
     refreshTooltip();
 }
 
-void PortStrip::setNodeName(const QString &name)
+void UsageStrip::setCounts(int playing, int recording)
 {
-    m_node = name;
-    refreshTooltip();
-    update();
-}
-
-void PortStrip::setClientCount(int n)
-{
-    if (m_clients == n)
+    if (m_playing == playing && m_recording == recording)
         return;
-    m_clients = n;
+    m_playing = playing;
+    m_recording = recording;
     refreshTooltip();
     update();
 }
 
-void PortStrip::refreshTooltip()
+void UsageStrip::setDeviceNames(const QString &sink, const QString &source)
 {
-    const QString what = m_role == CableOutput
-                             ? QStringLiteral("Applications select this as their <b>output device</b> to send audio into the cable.")
-                             : QStringLiteral("Applications select this as their <b>input device</b> to record audio out of the cable.");
-    setToolTip(QStringLiteral("%1<br><br>Device: <code>%2</code><br>Attached now: %3"
-                              "<br><br><i>Click to copy the device name.</i>")
-                   .arg(what, m_node.isEmpty() ? QStringLiteral("(not created)") : m_node)
-                   .arg(m_clients));
+    m_sink = sink;
+    m_source = source;
+    refreshTooltip();
 }
 
-void PortStrip::paintEvent(QPaintEvent *)
+void UsageStrip::refreshTooltip()
+{
+    const QString devices = m_sink.isEmpty() && m_source.isEmpty()
+        ? QStringLiteral("The cable is not created yet.")
+        : QStringLiteral("Output device: <code>%1</code><br>Input device: <code>%2</code>")
+              .arg(m_sink.toHtmlEscaped(), m_source.toHtmlEscaped());
+
+    setToolTip(QStringLiteral("Applications attached to this cable right now:"
+                              "<br>%1 playing into it, %2 recording from it.<br><br>%3")
+                   .arg(m_playing)
+                   .arg(m_recording)
+                   .arg(devices));
+}
+
+void UsageStrip::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
 
     const QRectF r = rect().adjusted(0.5, 0.5, -0.5, -0.5);
-    RackPaint::inset(p, r, 4, QColor(0x1c, 0x1f, 0x24, m_hover ? 255 : 210));
+    RackPaint::field(p, r, 6, Theme::field());
 
-    const bool active = m_clients > 0;
-    RackPaint::ledDot(p, QPointF(r.left() + 13, r.center().y()), 3.4,
-                      active ? Theme::signal() : Theme::textFaint(), active);
+    const int total = m_playing + m_recording;
+    RackPaint::dot(p, QPointF(r.left() + 13, r.center().y()), 3.2,
+                   total > 0 ? Theme::signal() : Theme::textFaint(), total > 0);
 
-    const QString role = m_role == CableOutput ? QStringLiteral("OUT") : QStringLiteral("IN");
-    const QString arrow = m_role == CableOutput ? QStringLiteral("▸") : QStringLiteral("◂");
+    QString text;
+    if (total == 0)
+        text = QStringLiteral("no apps connected");
+    else
+        text = QStringLiteral("%1 playing  ·  %2 recording").arg(m_playing).arg(m_recording);
 
-    p.setFont(Theme::engravedFont(9));
-    p.setPen(m_role == CableOutput ? Theme::accent() : Theme::warn());
-    const QRectF roleRect(r.left() + 24, r.top(), 40, r.height());
-    p.drawText(roleRect, Qt::AlignVCenter | Qt::AlignLeft, arrow + QLatin1Char(' ') + role);
-
-    p.setFont(Theme::monoFont(10));
-    const QRectF nameRect = r.adjusted(66, 0, m_clients > 0 ? -30 : -8, 0);
-    QFontMetrics fm(Theme::monoFont(10));
-    const QString shown = fm.elidedText(m_flash ? QStringLiteral("copied to clipboard")
-                                                : m_node,
-                                        m_flash ? Qt::ElideNone : Qt::ElideLeft,
-                                        int(nameRect.width()));
-    p.setPen(m_flash ? Theme::signal() : (m_hover ? Theme::textBright() : Theme::textDim()));
-    p.drawText(nameRect, Qt::AlignVCenter | Qt::AlignLeft, shown);
-
-    if (m_clients > 0)
-    {
-        const QRectF badge(r.right() - 27, r.center().y() - 8, 20, 16);
-        p.setPen(Qt::NoPen);
-        p.setBrush(Theme::signalDim());
-        p.drawRoundedRect(badge, 8, 8);
-        p.setFont(Theme::monoFont(9, true));
-        p.setPen(Theme::textBright());
-        p.drawText(badge, Qt::AlignCenter, QString::number(m_clients));
-    }
-}
-
-void PortStrip::mousePressEvent(QMouseEvent *e)
-{
-    if (e->button() != Qt::LeftButton || m_node.isEmpty())
-        return;
-    QApplication::clipboard()->setText(m_node);
-    m_flash = true;
-    update();
-    QTimer::singleShot(900, this, [this]
-                       { m_flash = false; update(); });
-}
-
-void PortStrip::enterEvent(QEnterEvent *)
-{
-    m_hover = true;
-    update();
-}
-void PortStrip::leaveEvent(QEvent *)
-{
-    m_hover = false;
-    update();
+    p.setFont(Theme::labelFont(11));
+    p.setPen(total > 0 ? Theme::textDim() : Theme::textFaint());
+    p.drawText(r.adjusted(26, 0, -10, 0), Qt::AlignVCenter | Qt::AlignLeft, text);
 }
 
 SourceStrip::SourceStrip(QWidget *parent) : QWidget(parent)
 {
     setCursor(Qt::PointingHandCursor);
     setAttribute(Qt::WA_Hover, true);
-    setFixedHeight(26);
+    setFixedHeight(28);
     refreshTooltip();
 }
 
@@ -185,23 +142,18 @@ void SourceStrip::paintEvent(QPaintEvent *)
     p.setRenderHint(QPainter::Antialiasing, true);
 
     const QRectF r = rect().adjusted(0.5, 0.5, -0.5, -0.5);
-    RackPaint::inset(p, r, 4, QColor(0x1c, 0x1f, 0x24, m_hover ? 255 : 210));
+    RackPaint::field(p, r, 6, m_hover ? Theme::surfaceHi() : Theme::field());
 
     const bool live = present();
     const bool stale = !m_chosen.isNull() && !live;
-    RackPaint::ledDot(p, QPointF(r.left() + 13, r.center().y()), 3.4,
-                      stale ? Theme::clip() : (live ? Theme::signal() : Theme::textFaint()),
-                      live || stale);
+    RackPaint::dot(p, QPointF(r.left() + 13, r.center().y()), 3.2,
+                   stale ? Theme::clip() : (live ? Theme::signal() : Theme::textFaint()),
+                   live || stale);
 
-    p.setFont(Theme::engravedFont(9));
-    p.setPen(live ? Theme::signal() : Theme::textFaint());
-    p.drawText(QRectF(r.left() + 24, r.top(), 40, r.height()),
-               Qt::AlignVCenter | Qt::AlignLeft, QStringLiteral("◂ SRC"));
-
-    const QRectF nameRect = r.adjusted(66, 0, -20, 0);
-    p.setFont(Theme::monoFont(10));
-    QFontMetrics fm(Theme::monoFont(10));
-    const QString label = m_chosen.isNull() ? QStringLiteral("no injection")
+    const QRectF nameRect = r.adjusted(26, 0, -22, 0);
+    p.setFont(Theme::labelFont(11));
+    const QFontMetrics fm(Theme::labelFont(11));
+    const QString label = m_chosen.isNull() ? QStringLiteral("no input injected")
                                             : m_chosen.description;
     p.setPen(m_chosen.isNull() ? Theme::textFaint()
                                : (stale ? Theme::clip()
@@ -211,7 +163,7 @@ void SourceStrip::paintEvent(QPaintEvent *)
 
     p.setFont(Theme::labelFont(9));
     p.setPen(m_hover ? Theme::textDim() : Theme::textFaint());
-    p.drawText(QRectF(r.right() - 18, r.top(), 14, r.height()),
+    p.drawText(QRectF(r.right() - 20, r.top(), 14, r.height()),
                Qt::AlignVCenter | Qt::AlignHCenter, QStringLiteral("▾"));
 }
 
@@ -226,11 +178,11 @@ void SourceStrip::openMenu()
     QMenu menu(this);
     menu.setFont(Theme::labelFont(12));
     menu.setStyleSheet(QStringLiteral(
-        "QMenu { background: #22252a; border: 1px solid #3d434b; padding: 4px; }"
-        "QMenu::item { padding: 5px 26px 5px 22px; color: #e6e9ee; }"
-        "QMenu::item:selected { background: #33383f; }"
-        "QMenu::item:disabled { color: #6b727d; }"
-        "QMenu::separator { height: 1px; background: #3d434b; margin: 4px 8px; }"));
+        "QMenu { background: #1e222a; border: 1px solid #272c35; border-radius: 8px; padding: 5px; }"
+        "QMenu::item { padding: 6px 26px 6px 22px; color: #e8eaef; border-radius: 5px; }"
+        "QMenu::item:selected { background: #2c323c; }"
+        "QMenu::item:disabled { color: #636b77; }"
+        "QMenu::separator { height: 1px; background: #272c35; margin: 5px 8px; }"));
 
     auto addSource = [&](const AudioSource &src, const QString &text)
     {
@@ -299,21 +251,21 @@ RackUnit::RackUnit(const CableConfig &cfg, QWidget *parent) : QWidget(parent), m
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     auto *root = new QHBoxLayout(this);
-    root->setContentsMargins(kRailWidth + 12, 12, kRailWidth + 12, 12);
+    root->setContentsMargins(kSidePad, 14, kSidePad, 14);
     root->setSpacing(14);
 
     auto *left = new QVBoxLayout;
-    left->setSpacing(5);
+    left->setSpacing(6);
 
     m_name = new QLineEdit(m_cfg.name, this);
     m_name->setFrame(false);
     m_name->setMaxLength(48);
     m_name->setToolTip(QStringLiteral("Name of this cable\nPress Enter to apply"));
     m_name->setStyleSheet(QStringLiteral(
-        "QLineEdit { background: transparent; border: none; border-bottom: 1px solid #3d434b;"
-        " color: #e6e9ee; font-size: 15px; font-weight: 600; padding: 1px 0 3px 0; }"
-        "QLineEdit:hover { border-bottom: 1px solid #5a626c; }"
-        "QLineEdit:focus { border-bottom: 1px solid #62b8f0; }"));
+        "QLineEdit { background: transparent; border: none; color: #e8eaef;"
+        " font-size: 15px; font-weight: 600; padding: 0 0 2px 0; }"
+        "QLineEdit:hover { color: #ffffff; }"
+        "QLineEdit:focus { border-bottom: 1px solid #5b9dff; }"));
     connect(m_name, &QLineEdit::editingFinished, this, [this]
             {
         const QString wanted = m_name->text().trimmed();
@@ -323,8 +275,7 @@ RackUnit::RackUnit(const CableConfig &cfg, QWidget *parent) : QWidget(parent), m
         }
         emit renameRequested(this, wanted); });
 
-    m_out = new PortStrip(PortStrip::CableOutput, this);
-    m_in = new PortStrip(PortStrip::CableInput, this);
+    m_usage = new UsageStrip(this);
 
     m_inject = new SourceStrip(this);
     m_inject->setChosen(m_cfg.inject);
@@ -332,20 +283,18 @@ RackUnit::RackUnit(const CableConfig &cfg, QWidget *parent) : QWidget(parent), m
             { emit injectRequested(this, src); });
 
     m_status = new QLabel(this);
-    m_status->setFont(Theme::monoFont(9));
-    m_status->setStyleSheet(QStringLiteral("color: #6b727d;"));
+    m_status->setFont(Theme::labelFont(10));
+    m_status->setStyleSheet(QStringLiteral("color: #636b77;"));
 
     left->addWidget(m_name);
-    left->addSpacing(2);
-    left->addWidget(m_out);
-    left->addWidget(m_in);
+    left->addWidget(m_usage);
     left->addWidget(m_inject);
     left->addWidget(m_status);
     left->addStretch(1);
 
     auto *leftHost = new QWidget(this);
     leftHost->setLayout(left);
-    leftHost->setFixedWidth(262);
+    leftHost->setFixedWidth(250);
     root->addWidget(leftHost);
 
     m_scope = new WaveformView(this);
@@ -353,15 +302,15 @@ RackUnit::RackUnit(const CableConfig &cfg, QWidget *parent) : QWidget(parent), m
 
     m_meter = new LedMeter(this);
     m_meter->setChannelCount(m_cfg.channels);
-    m_meter->setFixedWidth(m_cfg.channels <= 2 ? 24 : 10 + 7 * m_cfg.channels);
+    m_meter->setFixedWidth(m_cfg.channels <= 2 ? 22 : 11 + 7 * m_cfg.channels);
     root->addWidget(m_meter);
 
     auto *gainCol = new QVBoxLayout;
-    gainCol->setSpacing(2);
+    gainCol->setSpacing(3);
     gainCol->setAlignment(Qt::AlignHCenter);
 
     m_knob = new Knob(this);
-    m_knob->setFixedSize(52, 52);
+    m_knob->setFixedSize(48, 48);
     m_knob->setPosition(linearToKnob(m_cfg.gain));
     connect(m_knob, &Knob::positionChanged, this, [this](float)
             {
@@ -372,12 +321,11 @@ RackUnit::RackUnit(const CableConfig &cfg, QWidget *parent) : QWidget(parent), m
     m_gainText = new QLabel(this);
     m_gainText->setAlignment(Qt::AlignCenter);
     m_gainText->setFont(Theme::monoFont(10, true));
-    m_gainText->setStyleSheet(QStringLiteral("color: #969da8;"));
 
-    auto *gainCaption = new QLabel(QStringLiteral("GAIN"), this);
+    auto *gainCaption = new QLabel(QStringLiteral("Gain"), this);
     gainCaption->setAlignment(Qt::AlignCenter);
-    gainCaption->setFont(Theme::engravedFont(8));
-    gainCaption->setStyleSheet(QStringLiteral("color: #6b727d;"));
+    gainCaption->setFont(Theme::capsFont(8));
+    gainCaption->setStyleSheet(QStringLiteral("color: #636b77;"));
 
     gainCol->addWidget(m_knob, 0, Qt::AlignHCenter);
     gainCol->addWidget(m_gainText);
@@ -386,13 +334,13 @@ RackUnit::RackUnit(const CableConfig &cfg, QWidget *parent) : QWidget(parent), m
     root->addLayout(gainCol);
 
     auto *btnCol = new QVBoxLayout;
-    btnCol->setSpacing(6);
+    btnCol->setSpacing(7);
 
     m_mute = new RackButton(QStringLiteral("Mute"), this);
     m_mute->setCheckable(true);
-    m_mute->setLedColour(Theme::warn());
+    m_mute->setActiveColour(Theme::warn());
     m_mute->setChecked(m_cfg.muted);
-    m_mute->setFixedWidth(84);
+    m_mute->setFixedSize(84, 30);
     connect(m_mute, &RackButton::toggled, this, [this](bool on)
             {
         m_cfg.muted = on;
@@ -403,7 +351,7 @@ RackUnit::RackUnit(const CableConfig &cfg, QWidget *parent) : QWidget(parent), m
 
     m_remove = new RackButton(QStringLiteral("Remove"), this);
     m_remove->setDanger(true);
-    m_remove->setFixedWidth(84);
+    m_remove->setFixedSize(84, 30);
     connect(m_remove, &RackButton::clicked, this, [this]
             { emit removeRequested(this); });
 
@@ -447,15 +395,9 @@ void RackUnit::setHandle(CableHandle *handle)
     m_scope->setSource(handle);
     m_meter->reset();
     if (handle)
-    {
-        m_out->setNodeName(handle->sinkName());
-        m_in->setNodeName(handle->sourceName());
-    }
+        m_usage->setDeviceNames(handle->sinkName(), handle->sourceName());
     else
-    {
-        m_out->setNodeName(QString());
-        m_in->setNodeName(QString());
-    }
+        m_usage->setDeviceNames(QString(), QString());
     refreshFromBackend();
 }
 
@@ -464,13 +406,11 @@ void RackUnit::refreshFromBackend()
     if (!m_handle)
     {
         m_status->setText(QStringLiteral("offline"));
-        m_out->setClientCount(0);
-        m_in->setClientCount(0);
+        m_usage->setCounts(0, 0);
         return;
     }
 
-    m_out->setClientCount(m_handle->playbackClients());
-    m_in->setClientCount(m_handle->captureClients());
+    m_usage->setCounts(m_handle->playbackClients(), m_handle->captureClients());
 
     const int rate = m_handle->sampleRate();
     const int ch = m_handle->channels();
@@ -504,8 +444,8 @@ void RackUnit::updateGainReadout()
                                 .arg(db >= 0.05f ? QStringLiteral("+") : QString())
                                 .arg(db, 0, 'f', 1));
     m_gainText->setStyleSheet(std::fabs(db) < 0.05f
-                                  ? QStringLiteral("color: #46e092;")
-                                  : QStringLiteral("color: #969da8;"));
+                                  ? QStringLiteral("color: #3dcf8e;")
+                                  : QStringLiteral("color: #98a0ac;"));
 }
 
 void RackUnit::pushGain()
@@ -518,42 +458,6 @@ void RackUnit::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
 
-    const QRectF r = rect().adjusted(0, 2, 0, -2);
-
-    p.setPen(Qt::NoPen);
-    p.setBrush(QColor(0, 0, 0, 70));
-    p.drawRoundedRect(r.adjusted(2, 4, -2, 2), 6, 6);
-
-    RackPaint::brushedPlate(p, r, 5);
-
-    const QRectF leftRail(r.left(), r.top(), kRailWidth, r.height());
-    const QRectF rightRail(r.right() - kRailWidth, r.top(), kRailWidth, r.height());
-    p.save();
-    QPainterPath clip;
-    clip.addRoundedRect(r, 5, 5);
-    p.setClipPath(clip);
-    RackPaint::rail(p, leftRail, true);
-    RackPaint::rail(p, rightRail, false);
-    p.restore();
-
-    p.setPen(QPen(QColor(0, 0, 0, 90), 1));
-    p.drawLine(QPointF(leftRail.right(), r.top() + 1), QPointF(leftRail.right(), r.bottom() - 1));
-    p.drawLine(QPointF(rightRail.left(), r.top() + 1), QPointF(rightRail.left(), r.bottom() - 1));
-
-    const qreal sx1 = leftRail.center().x();
-    const qreal sx2 = rightRail.center().x();
-    RackPaint::screw(p, QPointF(sx1, r.top() + 17), 6, 18 + m_slot * 23);
-    RackPaint::screw(p, QPointF(sx1, r.bottom() - 17), 6, -35 + m_slot * 11);
-    RackPaint::screw(p, QPointF(sx2, r.top() + 17), 6, 62 - m_slot * 17);
-    RackPaint::screw(p, QPointF(sx2, r.bottom() - 17), 6, 5 + m_slot * 29);
-
-    p.save();
-    p.translate(leftRail.center().x(), r.center().y());
-    p.rotate(-90);
-    p.setFont(Theme::engravedFont(9));
-    p.setPen(QColor(0, 0, 0, 120));
-    p.drawText(QRectF(-40, -8 + 1, 80, 16), Qt::AlignCenter, QStringLiteral("CH %1").arg(m_slot, 2, 10, QLatin1Char('0')));
-    p.setPen(Theme::textFaint());
-    p.drawText(QRectF(-40, -8, 80, 16), Qt::AlignCenter, QStringLiteral("CH %1").arg(m_slot, 2, 10, QLatin1Char('0')));
-    p.restore();
+    const QRectF r = rect().adjusted(0.5, 0.5, -0.5, -0.5);
+    RackPaint::card(p, r, 10, Theme::surface(), Theme::border());
 }

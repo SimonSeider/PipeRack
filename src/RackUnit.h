@@ -10,37 +10,27 @@ class LedMeter;
 class RackButton;
 class WaveformView;
 
-class PortStrip : public QWidget
+class UsageStrip : public QWidget
 {
     Q_OBJECT
 public:
-    enum Role
-    {
-        CableOutput,
-        CableInput
-    };
+    explicit UsageStrip(QWidget *parent = nullptr);
 
-    PortStrip(Role role, QWidget *parent = nullptr);
+    void setCounts(int playing, int recording);
+    void setDeviceNames(const QString &sink, const QString &source);
 
-    void setNodeName(const QString &name);
-    void setClientCount(int n);
-
-    QSize sizeHint() const override { return QSize(230, 26); }
+    QSize sizeHint() const override { return QSize(230, 28); }
 
 protected:
     void paintEvent(QPaintEvent *) override;
-    void mousePressEvent(QMouseEvent *) override;
-    void enterEvent(QEnterEvent *) override;
-    void leaveEvent(QEvent *) override;
 
 private:
     void refreshTooltip();
 
-    Role m_role;
-    QString m_node;
-    int m_clients = 0;
-    bool m_hover = false;
-    bool m_flash = false;
+    int m_playing = 0;
+    int m_recording = 0;
+    QString m_sink;
+    QString m_source;
 };
 
 class SourceStrip : public QWidget
@@ -52,7 +42,7 @@ public:
     void setSources(const QList<AudioSource> &sources);
     void setChosen(const AudioSource &src);
 
-    QSize sizeHint() const override { return QSize(230, 26); }
+    QSize sizeHint() const override { return QSize(230, 28); }
 
 signals:
     void chosen(const AudioSource &src);
@@ -108,8 +98,7 @@ private:
     int m_slot = 1;
 
     QLineEdit *m_name = nullptr;
-    PortStrip *m_out = nullptr;
-    PortStrip *m_in = nullptr;
+    UsageStrip *m_usage = nullptr;
     SourceStrip *m_inject = nullptr;
     QLabel *m_status = nullptr;
     WaveformView *m_scope = nullptr;

@@ -25,23 +25,23 @@ static void applyDarkPalette(QApplication &app)
     QPalette pal;
     pal.setColor(QPalette::Window, Theme::windowBg());
     pal.setColor(QPalette::WindowText, Theme::textBright());
-    pal.setColor(QPalette::Base, QColor(0x1b, 0x1d, 0x21));
-    pal.setColor(QPalette::AlternateBase, QColor(0x22, 0x25, 0x2a));
-    pal.setColor(QPalette::ToolTipBase, QColor(0x22, 0x25, 0x2a));
+    pal.setColor(QPalette::Base, Theme::field());
+    pal.setColor(QPalette::AlternateBase, Theme::surface());
+    pal.setColor(QPalette::ToolTipBase, Theme::surfaceHi());
     pal.setColor(QPalette::ToolTipText, Theme::textBright());
     pal.setColor(QPalette::Text, Theme::textBright());
-    pal.setColor(QPalette::Button, QColor(0x2c, 0x30, 0x36));
+    pal.setColor(QPalette::Button, Theme::surfaceHi());
     pal.setColor(QPalette::ButtonText, Theme::textBright());
     pal.setColor(QPalette::Highlight, Theme::accent());
-    pal.setColor(QPalette::HighlightedText, QColor(0x0d, 0x12, 0x18));
+    pal.setColor(QPalette::HighlightedText, Theme::windowBg());
     pal.setColor(QPalette::PlaceholderText, Theme::textFaint());
     pal.setColor(QPalette::Disabled, QPalette::WindowText, Theme::textFaint());
     pal.setColor(QPalette::Disabled, QPalette::ButtonText, Theme::textFaint());
     app.setPalette(pal);
 
     app.setStyleSheet(QStringLiteral(
-        "QToolTip { background: #22252a; color: #e6e9ee; border: 1px solid #3d434b;"
-        " padding: 5px 7px; }"));
+        "QToolTip { background: #1e222a; color: #e8eaef; border: 1px solid #272c35;"
+        " border-radius: 6px; padding: 6px 8px; }"));
 }
 
 static int sigFd[2] = {-1, -1};
@@ -100,7 +100,6 @@ int main(int argc, char **argv)
 
     const QString want = parser.value(backendOpt).toLower();
     AudioBackend *backend = nullptr;
-    QString error;
     QStringList tried;
 
     auto tryStart = [&](AudioBackend *candidate)
@@ -115,20 +114,34 @@ int main(int argc, char **argv)
         delete candidate;
         return false;
     };
-    //TODO: This is a current bug, having both backends makes the app try to start both at the same time
-    if (want == QLatin1String("pulse"))
-    {
-#ifdef HAVE_PULSE
-        tryStart(new PulseBackend);
-#elifdef HAVE_PIPEWIRE
+
+    // Only start the first backend that connects; no two servers are started at once.
+#ifdef HAVE_PIPEWIRE
+    if (!backend && (want == QLatin1String("auto") || want == QLatin1String("pipewire")))
         tryStart(new PipeWireBackend);
 #endif
-    }
-    //if any case this has been for ever reason compiled without any backend which would be stupid, dont do it >:(
+#ifdef HAVE_PULSE
+    if (!backend && (want == QLatin1String("auto") || want == QLatin1String("pulse")))
+        tryStart(new PulseBackend);
+#endif
+
     if (!backend)
     {
-        if (error.isEmpty())
-            error = tried.isEmpty() ? QStringLiteral("No supported audio server was found.") : tried.join(QStringLiteral("\n"));
+        const QString error =
+            tried.isEmpty()
+                ? QStringLiteral("This build has no backend for “%1”. It was compiled with: %2.")
+                      .arg(want, QStringLiteral(
+#if defined(HAVE_PIPEWIRE) && defined(HAVE_PULSE)
+                                      "pipewire, pulse"
+#elif defined(HAVE_PIPEWIRE)
+                                      "pipewire"
+#elif defined(HAVE_PULSE)
+                                      "pulse"
+#else
+                                      "nothing"
+#endif
+                                      ))
+                : tried.join(QStringLiteral("\n"));
         QMessageBox::critical(nullptr, QStringLiteral("PipeRack cannot start"), QStringLiteral("PipeRack could not connect to an audio " "server.\n\n%1").arg(error));
         return 1;
     }

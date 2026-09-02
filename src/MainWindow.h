@@ -50,6 +50,7 @@ private:
     QScrollArea *m_scroll = nullptr;
     QLabel *m_empty = nullptr;
     QLabel *m_badge = nullptr;
+    QWidget *m_addRow = nullptr;
     RackButton *m_add = nullptr;
     QVector<RackUnit *> m_units;
     QElapsedTimer *m_clock = nullptr;

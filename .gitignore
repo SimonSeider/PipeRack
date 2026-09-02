@@ -1,1 +1,5 @@
 build
+packaging/appimage/AppDir/usr/bin/piperack
+packaging/appimage/AppDir/usr/share/applications/piperack.desktop
+PipeRack.AppImage
+appimagetool-x86_64.AppImage

@@ -1,17 +1,16 @@
 #pragma once
-#include <QWidget>
-#include <QElapsedTimer>
+#include <QColor>
 #include <QString>
+#include <QWidget>
 
 class QPainter;
 
 namespace RackPaint
 {
-    void brushedPlate(QPainter &p, const QRectF &r, qreal radius);
-    void rail(QPainter &p, const QRectF &r, bool leftSide);
-    void screw(QPainter &p, const QPointF &c, qreal radius, qreal angleDeg);
-    void inset(QPainter &p, const QRectF &r, qreal radius, const QColor &fill);
-    void ledDot(QPainter &p, const QPointF &c, qreal radius, const QColor &colour, bool lit);
+    void card(QPainter &p, const QRectF &r, qreal radius, const QColor &fill,
+              const QColor &stroke);
+    void field(QPainter &p, const QRectF &r, qreal radius, const QColor &fill);
+    void dot(QPainter &p, const QPointF &c, qreal radius, const QColor &colour, bool lit);
 }
 
 class Knob : public QWidget
@@ -23,7 +22,7 @@ public:
     float position() const { return m_pos; }
     void setPosition(float pos);
 
-    QSize sizeHint() const override { return QSize(52, 52); }
+    QSize sizeHint() const override { return QSize(48, 48); }
 
 signals:
     void positionChanged(float pos);
@@ -59,7 +58,7 @@ public:
         update();
     }
 
-    QSize sizeHint() const override { return QSize(22, 90); }
+    QSize sizeHint() const override { return QSize(20, 90); }
 
 protected:
     void paintEvent(QPaintEvent *) override;
@@ -82,14 +81,20 @@ public:
     void setCheckable(bool on) { m_checkable = on; }
     bool isChecked() const { return m_checked; }
     void setChecked(bool on);
-    void setLedColour(const QColor &c)
+
+    void setActiveColour(const QColor &c)
     {
-        m_led = c;
+        m_active = c;
         update();
     }
     void setDanger(bool on)
     {
         m_danger = on;
+        update();
+    }
+    void setGhost(bool on)
+    {
+        m_ghost = on;
         update();
     }
 
@@ -113,5 +118,6 @@ private:
     bool m_down = false;
     bool m_hover = false;
     bool m_danger = false;
-    QColor m_led;
+    bool m_ghost = false;
+    QColor m_active;
 };

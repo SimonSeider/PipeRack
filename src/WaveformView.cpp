@@ -3,7 +3,6 @@
 #include "Theme.h"
 
 #include <QFontMetrics>
-#include <QLinearGradient>
 #include <QPainter>
 #include <QVector>
 
@@ -100,7 +99,7 @@ void WaveformView::paintEvent(QPaintEvent *)
     p.setRenderHint(QPainter::Antialiasing, true);
 
     const QRectF r = rect().adjusted(0.5, 0.5, -0.5, -0.5);
-    RackPaint::inset(p, r, 4, Theme::screenBg());
+    RackPaint::field(p, r, 6, Theme::screenBg());
 
     const QRectF face = r.adjusted(3, 3, -3, -3);
     p.save();
@@ -178,16 +177,9 @@ void WaveformView::paintEvent(QPaintEvent *)
         p.drawLines(hot);
     }
 
-    QLinearGradient vg(face.topLeft(), face.bottomLeft());
-    vg.setColorAt(0.0, QColor(0, 0, 0, 90));
-    vg.setColorAt(0.25, QColor(0, 0, 0, 0));
-    vg.setColorAt(0.75, QColor(0, 0, 0, 0));
-    vg.setColorAt(1.0, QColor(0, 0, 0, 90));
-    p.fillRect(face, vg);
-
     p.restore();
 
-    p.setFont(Theme::monoFont(9));
+    p.setFont(Theme::capsFont(9));
 
     QString status;
     QColor statusColour;
@@ -213,8 +205,8 @@ void WaveformView::paintEvent(QPaintEvent *)
         QRectF plate(0, 0, fm.horizontalAdvance(status) + 18, fm.height() + 8);
         plate.moveCenter(face.center());
         p.setPen(Qt::NoPen);
-        p.setBrush(QColor(0, 0, 0, 170));
-        p.drawRoundedRect(plate, 3, 3);
+        p.setBrush(Theme::surface());
+        p.drawRoundedRect(plate, 5, 5);
         p.setPen(statusColour);
         p.drawText(plate, Qt::AlignCenter, status);
     }
