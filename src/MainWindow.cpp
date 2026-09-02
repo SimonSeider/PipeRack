@@ -22,7 +22,7 @@ static constexpr int kTickMs = 16;
 MainWindow::MainWindow(AudioBackend *backend, QWidget *parent)
     : QMainWindow(parent), m_backend(backend)
 {
-    setWindowTitle(QStringLiteral("PipeRack"));
+    setWindowTitle(QStringLiteral("PipeRack | Using %1 as Backend").arg(m_backend->displayName()));
     setMinimumSize(940, 560);
     resize(1120, 720);
 
@@ -42,10 +42,12 @@ MainWindow::MainWindow(AudioBackend *backend, QWidget *parent)
     title->setFont(Theme::labelFont(17, true));
     title->setStyleSheet(QStringLiteral("color: #e8eaef;"));
 
-    m_badge = new QLabel(m_backend->displayName(), brow);
+    // Nothing to say while the audio server is fine; the label only appears if
+    // the connection drops. The backend name lives in the window title.
+    m_badge = new QLabel(brow);
     m_badge->setFont(Theme::labelFont(11));
-    m_badge->setStyleSheet(QStringLiteral(
-        "color: #98a0ac; border: 1px solid #272c35; border-radius: 9px; padding: 3px 9px;"));
+    m_badge->setStyleSheet(QStringLiteral("color: #ef5a52;"));
+    m_badge->hide();
 
     browLay->addWidget(title);
     browLay->addWidget(m_badge);
@@ -354,9 +356,8 @@ void MainWindow::onBackendLost(const QString &reason)
     for (RackUnit *u : m_units)
         u->setHandle(nullptr);
 
-    m_badge->setText(QStringLiteral("%1 · disconnected").arg(m_backend->displayName()));
-    m_badge->setStyleSheet(QStringLiteral(
-        "color: #ef5a52; border: 1px solid #5a2a27; border-radius: 9px; padding: 3px 9px;"));
+    m_badge->setText(QStringLiteral("%1 disconnected").arg(m_backend->displayName()));
+    m_badge->show();
     m_add->setEnabled(false);
 
     QMessageBox::critical(this, QStringLiteral("Audio server connection lost"),
